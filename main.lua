@@ -29,7 +29,6 @@ frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 frame.Active = true
 frame.Draggable = true
 frame.BorderSizePixel = 0
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
 --// HEADER
 local header = Instance.new("Frame", frame)
@@ -68,7 +67,6 @@ local function createButton(text)
 	b.TextSize = 14
 	b.BorderSizePixel = 0
 	b.Text = text
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
 	table.insert(buttons,b)
 	return b
 end
@@ -78,7 +76,7 @@ local wallBtn  = createButton("WALL HACK")
 local jumpBtn  = createButton("INF JUMP")
 local shiftBtn = createButton("SHIFT LOCK")
 
---// POSICIÓN AUTOMÁTICA
+--// POSICIÓN
 local padding = 10
 local startY = 50
 
@@ -136,7 +134,11 @@ wallBtn.MouseButton1Click:Connect(function()
 		noclipConn = RunService.Stepped:Connect(function()
 			for _,v in pairs(workspace:GetDescendants()) do
 				if v:IsA("BasePart") then
-					v.CanCollide = false
+					if not CollectionService:HasTag(v,"Ground") then
+						v.CanCollide = false
+					else
+						v.CanCollide = true
+					end
 				end
 			end
 		end)
@@ -150,7 +152,10 @@ wallBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- INF JUMP
+------------------------------------------------
+-- INF JUMP (FIX ANTI-CHEAT)
+------------------------------------------------
+
 local infJump = false
 
 jumpBtn.MouseButton1Click:Connect(function()
@@ -160,9 +165,17 @@ end)
 
 UIS.JumpRequest:Connect(function()
 	if infJump then
-		local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-		if hum then
-			hum:ChangeState(Enum.HumanoidStateType.Jumping)
+		local char = player.Character
+		local hum = char and char:FindFirstChildOfClass("Humanoid")
+		local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+		if hum and hrp then
+			-- impulso limpio, no mata
+			hrp.Velocity = Vector3.new(
+				hrp.Velocity.X,
+				50,
+				hrp.Velocity.Z
+			)
 		end
 	end
 end)
@@ -170,13 +183,46 @@ end)
 ------------------------------------------------
 -- SHIFT LOCK
 ------------------------------------------------
+
+local shiftIcon = Instance.new("ImageButton", gui)
+shiftIcon.Size = UDim2.new(0,36,0,36)
+shiftIcon.Position = UDim2.new(0.92,0,0.78,0)
+shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+shiftIcon.BorderSizePixel = 0
+shiftIcon.Image = "rbxassetid://3926305904"
+shiftIcon.ImageRectOffset = Vector2.new(4,684)
+shiftIcon.ImageRectSize = Vector2.new(36,36)
+shiftIcon.Visible = false
+shiftIcon.Active = false
+Instance.new("UICorner", shiftIcon).CornerRadius = UDim.new(1,0)
+
 local shiftLock = false
 
 shiftBtn.MouseButton1Click:Connect(function()
 	shiftLock = not shiftLock
 	shiftBtn.Text = shiftLock and "SHIFT LOCK: ON" or "SHIFT LOCK"
 
-	UIS.MouseBehavior = shiftLock and Enum.MouseBehavior.LockCenter or Enum.MouseBehavior.Default
+	shiftIcon.Visible = shiftLock
+
+	if shiftLock then
+		UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	else
+		UIS.MouseBehavior = Enum.MouseBehavior.Default
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	end
 end)
 
-print("✅ Menu cargado correctamente")
+shiftIcon.MouseButton1Click:Connect(function()
+	shiftLock = not shiftLock
+
+	if shiftLock then
+		UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	else
+		UIS.MouseBehavior = Enum.MouseBehavior.Default
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	end
+end)
+
+print("✅ Script cargado | INF JUMP FIX | Menu estable")
