@@ -17,54 +17,77 @@ player.CharacterAdded:Connect(function(char)
 	end
 end)
 
---// GUI
-local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "MenuUI"
+--// GUI PERSISTENTE
+local gui = player:WaitForChild("PlayerGui"):FindFirstChild("MenuUI")
+if not gui then
+    gui = Instance.new("ScreenGui")
+    gui.Name = "MenuUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = player.PlayerGui
+end
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,260,0,240)
-frame.Position = UDim2.new(0.4,0,0.3,0)
-frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-frame.Active = true
-frame.Draggable = true
-frame.BorderSizePixel = 0
+--// PANEL
+local frame = gui:FindFirstChild("Frame")
+if not frame then
+    frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0,260,0,240)
+    frame.Position = UDim2.new(0.4,0,0.3,0)
+    frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    frame.Active = true
+    frame.Draggable = true
+    frame.BorderSizePixel = 0
+end
 
 --// HEADER
-local header = Instance.new("Frame", frame)
-header.Size = UDim2.new(1,0,0,40)
-header.BackgroundColor3 = Color3.fromRGB(20,20,20)
+local header = frame:FindFirstChild("Header")
+if not header then
+    header = Instance.new("Frame", frame)
+    header.Name = "Header"
+    header.Size = UDim2.new(1,0,0,40)
+    header.BackgroundColor3 = Color3.fromRGB(20,20,20)
+end
 
-local title = Instance.new("TextLabel", header)
-title.Size = UDim2.new(1,-40,1,0)
-title.Position = UDim2.new(0,10,0,0)
-title.Text = "you vs homer V1.0"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.GothamBold
-title.TextSize = 13
-title.TextXAlignment = Enum.TextXAlignment.Left
+local title = header:FindFirstChild("Title")
+if not title then
+    title = Instance.new("TextLabel", header)
+    title.Name = "Title"
+    title.Size = UDim2.new(1,-40,1,0)
+    title.Position = UDim2.new(0,10,0,0)
+    title.Text = "you vs homer V1.0"
+    title.TextColor3 = Color3.fromRGB(255,255,255)
+    title.BackgroundTransparency = 1
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 13
+    title.TextXAlignment = Enum.TextXAlignment.Left
+end
 
-local minimize = Instance.new("TextButton", header)
-minimize.Size = UDim2.new(0,30,1,0)
-minimize.Position = UDim2.new(1,-30,0,0)
-minimize.Text = "-"
-minimize.TextColor3 = Color3.fromRGB(255,255,255)
-minimize.BackgroundTransparency = 1
-minimize.Font = Enum.Font.GothamBold
-minimize.TextSize = 20
+local minimize = header:FindFirstChild("Minimize")
+if not minimize then
+    minimize = Instance.new("TextButton", header)
+    minimize.Name = "Minimize"
+    minimize.Size = UDim2.new(0,30,1,0)
+    minimize.Position = UDim2.new(1,-30,0,0)
+    minimize.Text = "-"
+    minimize.TextColor3 = Color3.fromRGB(255,255,255)
+    minimize.BackgroundTransparency = 1
+    minimize.Font = Enum.Font.GothamBold
+    minimize.TextSize = 20
+end
 
 --// BOTONES
 local buttons = {}
-
-local function createButton(text)
-	local b = Instance.new("TextButton", frame)
-	b.Size = UDim2.new(0,200,0,40)
-	b.BackgroundColor3 = Color3.fromRGB(40,40,40)
-	b.TextColor3 = Color3.fromRGB(255,255,255)
-	b.Font = Enum.Font.GothamBold
-	b.TextSize = 14
-	b.BorderSizePixel = 0
-	b.Text = text
+local function createButton(name)
+	local b = frame:FindFirstChild(name)
+	if not b then
+	    b = Instance.new("TextButton", frame)
+	    b.Size = UDim2.new(0,200,0,40)
+	    b.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	    b.TextColor3 = Color3.fromRGB(255,255,255)
+	    b.Font = Enum.Font.GothamBold
+	    b.TextSize = 14
+	    b.BorderSizePixel = 0
+	    b.Text = name
+	end
 	table.insert(buttons,b)
 	return b
 end
@@ -77,31 +100,22 @@ local shiftBtn = createButton("SHIFT LOCK")
 --// POSICIÓN
 local padding = 10
 local startY = 50
-
 for i,btn in ipairs(buttons) do
 	btn.Position = UDim2.new(0,30,0,startY + ((i-1)*(40+padding)))
 end
-
-local totalHeight = startY + (#buttons*(40+padding))
-frame.Size = UDim2.new(0,260,0,totalHeight)
+frame.Size = UDim2.new(0,260,0,startY + (#buttons*(40+padding)))
 
 --// MINIMIZAR
 local minimized = false
 local fullSize = frame.Size
-
 minimize.MouseButton1Click:Connect(function()
 	minimized = not minimized
-
 	if minimized then
-		for _,b in pairs(buttons) do
-			b.Visible = false
-		end
+		for _,b in pairs(buttons) do b.Visible = false end
 		frame.Size = UDim2.new(0,260,0,40)
 		minimize.Text = "+"
 	else
-		for _,b in pairs(buttons) do
-			b.Visible = true
-		end
+		for _,b in pairs(buttons) do b.Visible = true end
 		frame.Size = fullSize
 		minimize.Text = "-"
 	end
@@ -120,10 +134,9 @@ tpBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- WALL HACK (TODO MENOS SUELO)
+-- WALL HACK (NOCLIP)
 local noclip = false
 local noclipConn
-
 wallBtn.MouseButton1Click:Connect(function()
 	noclip = not noclip
 	wallBtn.Text = noclip and "WALL HACK: ON" or "WALL HACK"
@@ -143,23 +156,21 @@ wallBtn.MouseButton1Click:Connect(function()
 	else
 		if noclipConn then noclipConn:Disconnect() end
 		for _,v in pairs(workspace:GetDescendants()) do
-			if v:IsA("BasePart") then
-				v.CanCollide = true
-			end
+			if v:IsA("BasePart") then v.CanCollide = true end
 		end
 	end
 end)
 
--- MULTI JUMP (SIN ELEVAR)
-local jumpEnabled = false
-
+-- INF JUMP MULTI
+local multiJump = false
+local jumpForce = 50
 jumpBtn.MouseButton1Click:Connect(function()
-	jumpEnabled = not jumpEnabled
-	jumpBtn.Text = jumpEnabled and "INF JUMP: ON" or "INF JUMP"
+	multiJump = not multiJump
+	jumpBtn.Text = multiJump and "INF JUMP: ON" or "INF JUMP"
 end)
 
 UIS.JumpRequest:Connect(function()
-	if jumpEnabled then
+	if multiJump then
 		local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
 		if hum then
 			hum:ChangeState(Enum.HumanoidStateType.Jumping)
@@ -170,31 +181,25 @@ end)
 ------------------------------------------------
 -- SHIFT LOCK (FIJO)
 ------------------------------------------------
-
--- ICONO FIJO
-local shiftIcon = Instance.new("ImageButton", gui)
-shiftIcon.Size = UDim2.new(0,36,0,36)
-shiftIcon.Position = UDim2.new(0.92,0,0.78,0)
-shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
-shiftIcon.BorderSizePixel = 0
-shiftIcon.Image = "rbxassetid://3926305904"
-shiftIcon.ImageRectOffset = Vector2.new(4,684)
-shiftIcon.ImageRectSize = Vector2.new(36,36)
-shiftIcon.Visible = false
-
-local corner = Instance.new("UICorner", shiftIcon)
-corner.CornerRadius = UDim.new(1,0)
-
--- NO MOVIBLE
-shiftIcon.Active = false
+local shiftIcon = gui:FindFirstChild("ShiftIcon")
+if not shiftIcon then
+	shiftIcon = Instance.new("ImageButton", gui)
+	shiftIcon.Name = "ShiftIcon"
+	shiftIcon.Size = UDim2.new(0,36,0,36)
+	shiftIcon.Position = UDim2.new(0.92,0,0.78,0)
+	shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	shiftIcon.BorderSizePixel = 0
+	shiftIcon.Image = "rbxassetid://3926305904"
+	shiftIcon.ImageRectOffset = Vector2.new(4,684)
+	shiftIcon.ImageRectSize = Vector2.new(36,36)
+	shiftIcon.Visible = false
+	Instance.new("UICorner", shiftIcon).CornerRadius = UDim.new(1,0)
+end
 
 local shiftLock = false
-
--- BOTÓN DEL MENÚ
 shiftBtn.MouseButton1Click:Connect(function()
 	shiftLock = not shiftLock
 	shiftBtn.Text = shiftLock and "SHIFT LOCK: ON" or "SHIFT LOCK"
-
 	shiftIcon.Visible = shiftLock
 
 	if shiftLock then
@@ -206,10 +211,8 @@ shiftBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- TOCAR ICONO
 shiftIcon.MouseButton1Click:Connect(function()
 	shiftLock = not shiftLock
-
 	if shiftLock then
 		UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
 		shiftIcon.BackgroundColor3 = Color3.fromRGB(255,255,255)
@@ -218,3 +221,5 @@ shiftIcon.MouseButton1Click:Connect(function()
 		shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
 	end
 end)
+
+print("✅ Menú persistente cargado, TP, Wall Hack, INF JUMP y SHIFT LOCK activos")
