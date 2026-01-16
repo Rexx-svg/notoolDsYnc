@@ -1,87 +1,220 @@
---------------------------------------------------
--- DESYNC MENU (APARTADO ESTILO CAT HUB)
---------------------------------------------------
-local desyncFrame = Instance.new("Frame", gui)
-desyncFrame.Size = UDim2.fromScale(0.3,0.2)
-desyncFrame.Position = UDim2.fromScale(0.35,0.1)
-desyncFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-desyncFrame.BorderSizePixel = 0
-desyncFrame.Visible = true
-Instance.new("UICorner", desyncFrame).CornerRadius = UDim.new(0,18)
+--// SERVICIOS
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local CollectionService = game:GetService("CollectionService")
 
--- TITULO
-local desyncTitle = Instance.new("TextLabel", desyncFrame)
-desyncTitle.Size = UDim2.fromScale(1,0.3)
-desyncTitle.BackgroundTransparency = 1
-desyncTitle.Text = "DESYNC MENU"
-desyncTitle.Font = Enum.Font.GothamBlack
-desyncTitle.TextScaled = true
-desyncTitle.TextColor3 = Color3.fromRGB(255,90,90)
+--// GUARDAR LOBBY
+local lobbyCFrame
+local firstSpawn = true
 
--- BOTON DESYNC
-local desyncBtn = Instance.new("TextButton", desyncFrame)
-desyncBtn.Size = UDim2.fromScale(0.9,0.5)
-desyncBtn.Position = UDim2.fromScale(0.05,0.4)
-desyncBtn.Text = "DESYNC"
-desyncBtn.Font = Enum.Font.GothamBold
-desyncBtn.TextScaled = true
-desyncBtn.TextSize = 28
-desyncBtn.TextColor3 = Color3.new(1,1,1)
-desyncBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
-desyncBtn.BorderSizePixel = 0
-Instance.new("UICorner", desyncBtn).CornerRadius = UDim.new(0,14)
-
--- DRAG DESYNC FRAME
-local dragging, dragStart, startPos
-desyncFrame.InputBegan:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = i.Position
-		startPos = desyncFrame.Position
-	end
-end)
-
-UIS.InputChanged:Connect(function(i)
-	if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-		local d = i.Position - dragStart
-		desyncFrame.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
-	end
-end)
-
-UIS.InputEnded:Connect(function() dragging = false end)
-
--- ACCION DEL BOTON DESYNC
-desyncBtn.MouseButton1Click:Connect(function()
-	click()
-	if not char then return end
+player.CharacterAdded:Connect(function(char)
+	task.wait(1)
 	local hrp = char:WaitForChild("HumanoidRootPart")
-	local humanoid = char:WaitForChild("Humanoid")
+	if firstSpawn then
+		lobbyCFrame = hrp.CFrame
+		firstSpawn = false
+	end
+end)
 
-	-- Clonar cuerpo para apariencia visual
-	local clone = char:Clone()
-	for _, part in pairs(clone:GetChildren()) do
-		if part:IsA("BasePart") then
-			part.Anchored = true
-		elseif part:IsA("Humanoid") then
-			part.Health = 0
+--// GUI
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "MenuUI"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,260,0,240)
+frame.Position = UDim2.new(0.4,0,0.3,0)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.Active = true
+frame.Draggable = true -- PANEL MOVIBLE
+frame.BorderSizePixel = 0
+
+--// HEADER
+local header = Instance.new("Frame", frame)
+header.Size = UDim2.new(1,0,0,40)
+header.BackgroundColor3 = Color3.fromRGB(20,20,20)
+
+local title = Instance.new("TextLabel", header)
+title.Size = UDim2.new(1,-40,1,0)
+title.Position = UDim2.new(0,10,0,0)
+title.Text = "you vs homer V1.0"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 13
+title.TextXAlignment = Left
+
+local minimize = Instance.new("TextButton", header)
+minimize.Size = UDim2.new(0,30,1,0)
+minimize.Position = UDim2.new(1,-30,0,0)
+minimize.Text = "-"
+minimize.TextColor3 = Color3.fromRGB(255,255,255)
+minimize.BackgroundTransparency = 1
+minimize.Font = Enum.Font.GothamBold
+minimize.TextSize = 20
+
+--// BOTONES
+local buttons = {}
+
+local function createButton(text)
+	local b = Instance.new("TextButton", frame)
+	b.Size = UDim2.new(0,200,0,40)
+	b.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	b.TextColor3 = Color3.fromRGB(255,255,255)
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 14
+	b.BorderSizePixel = 0
+	b.Text = text
+	table.insert(buttons,b)
+	return b
+end
+
+local tpBtn    = createButton("TP SALVO")
+local wallBtn  = createButton("WALL HACK")
+local jumpBtn  = createButton("INF JUMP")
+local shiftBtn = createButton("SHIFT LOCK")
+
+--// POSICIÓN
+local padding = 10
+local startY = 50
+
+for i,btn in ipairs(buttons) do
+	btn.Position = UDim2.new(0,30,0,startY + ((i-1)*(40+padding)))
+end
+
+local totalHeight = startY + (#buttons*(40+padding))
+frame.Size = UDim2.new(0,260,0,totalHeight)
+
+--// MINIMIZAR
+local minimized = false
+local fullSize = frame.Size
+
+minimize.MouseButton1Click:Connect(function()
+	minimized = not minimized
+
+	if minimized then
+		for _,b in pairs(buttons) do
+			b.Visible = false
+		end
+		frame.Size = UDim2.new(0,260,0,40)
+		minimize.Text = "+"
+	else
+		for _,b in pairs(buttons) do
+			b.Visible = true
+		end
+		frame.Size = fullSize
+		minimize.Text = "-"
+	end
+end)
+
+------------------------------------------------
+-- FUNCIONES
+------------------------------------------------
+
+-- TP LOBBY
+tpBtn.MouseButton1Click:Connect(function()
+	local char = player.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if hrp and lobbyCFrame then
+		hrp.CFrame = lobbyCFrame
+	end
+end)
+
+-- WALL HACK (TODO MENOS SUELO)
+local noclip = false
+local noclipConn
+
+wallBtn.MouseButton1Click:Connect(function()
+	noclip = not noclip
+	wallBtn.Text = noclip and "WALL HACK: ON" or "WALL HACK"
+
+	if noclip then
+		noclipConn = RunService.Stepped:Connect(function()
+			for _,v in pairs(workspace:GetDescendants()) do
+				if v:IsA("BasePart") then
+					if not CollectionService:HasTag(v,"Ground") then
+						v.CanCollide = false
+					else
+						v.CanCollide = true
+					end
+				end
+			end
+		end)
+	else
+		if noclipConn then noclipConn:Disconnect() end
+		for _,v in pairs(workspace:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = true
+			end
 		end
 	end
-	clone.Parent = workspace
+end)
 
-	-- Hacer cuerpo real invisible
-	for _, part in pairs(char:GetChildren()) do
-		if part:IsA("BasePart") then
-			part.Transparency = 1
-			part.CanCollide = false
-		elseif part:IsA("Humanoid") then
-			part.PlatformStand = true
+-- INF JUMP
+local infJump = false
+
+jumpBtn.MouseButton1Click:Connect(function()
+	infJump = not infJump
+	jumpBtn.Text = infJump and "INF JUMP: ON" or "INF JUMP"
+end)
+
+UIS.JumpRequest:Connect(function()
+	if infJump then
+		local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum:ChangeState(Enum.HumanoidStateType.Jumping)
 		end
 	end
+end)
 
-	-- Mantener HRP real controlable
-	RunService.Heartbeat:Connect(function()
-		if humanoid.Health > 0 then
-			hrp.CFrame = hrp.CFrame -- tu HRP sigue moviéndose con otros scripts
-		end
-	end)
+------------------------------------------------
+-- SHIFT LOCK (FIJO)
+------------------------------------------------
+
+-- ICONO FIJO
+local shiftIcon = Instance.new("ImageButton", gui)
+shiftIcon.Size = UDim2.new(0,36,0,36)
+shiftIcon.Position = UDim2.new(0.92,0,0.78,0)
+shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+shiftIcon.BorderSizePixel = 0
+shiftIcon.Image = "rbxassetid://3926305904"
+shiftIcon.ImageRectOffset = Vector2.new(4,684)
+shiftIcon.ImageRectSize = Vector2.new(36,36)
+shiftIcon.Visible = false
+
+local corner = Instance.new("UICorner", shiftIcon)
+corner.CornerRadius = UDim.new(1,0)
+
+-- NO MOVIBLE
+shiftIcon.Active = false
+
+local shiftLock = false
+
+-- BOTÓN DEL MENÚ
+shiftBtn.MouseButton1Click:Connect(function()
+	shiftLock = not shiftLock
+	shiftBtn.Text = shiftLock and "SHIFT LOCK: ON" or "SHIFT LOCK"
+
+	shiftIcon.Visible = shiftLock
+
+	if shiftLock then
+		UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	else
+		UIS.MouseBehavior = Enum.MouseBehavior.Default
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	end
+end)
+
+-- TOCAR ICONO
+shiftIcon.MouseButton1Click:Connect(function()
+	shiftLock = not shiftLock
+
+	if shiftLock then
+		UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	else
+		UIS.MouseBehavior = Enum.MouseBehavior.Default
+		shiftIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	end
 end)
