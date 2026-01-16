@@ -91,6 +91,7 @@ local fullSize = frame.Size
 
 minimize.MouseButton1Click:Connect(function()
 	minimized = not minimized
+
 	if minimized then
 		for _,b in pairs(buttons) do
 			b.Visible = false
@@ -149,22 +150,19 @@ wallBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- INF JUMP (Múltiples saltos)
-local infJump = false
-local jumpPower = 50 -- altura de cada salto extra
+-- MULTI JUMP (SIN ELEVAR)
+local jumpEnabled = false
 
 jumpBtn.MouseButton1Click:Connect(function()
-	infJump = not infJump
-	jumpBtn.Text = infJump and "INF JUMP: ON" or "INF JUMP"
+	jumpEnabled = not jumpEnabled
+	jumpBtn.Text = jumpEnabled and "INF JUMP: ON" or "INF JUMP"
 end)
 
 UIS.JumpRequest:Connect(function()
-	if infJump then
+	if jumpEnabled then
 		local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
 		if hum then
-			-- Aplicamos impulso vertical cada vez que salta
 			hum:ChangeState(Enum.HumanoidStateType.Jumping)
-			hum.JumpPower = jumpPower
 		end
 	end
 end)
@@ -173,6 +171,7 @@ end)
 -- SHIFT LOCK (FIJO)
 ------------------------------------------------
 
+-- ICONO FIJO
 local shiftIcon = Instance.new("ImageButton", gui)
 shiftIcon.Size = UDim2.new(0,36,0,36)
 shiftIcon.Position = UDim2.new(0.92,0,0.78,0)
@@ -185,13 +184,17 @@ shiftIcon.Visible = false
 
 local corner = Instance.new("UICorner", shiftIcon)
 corner.CornerRadius = UDim.new(1,0)
+
+-- NO MOVIBLE
 shiftIcon.Active = false
 
 local shiftLock = false
 
+-- BOTÓN DEL MENÚ
 shiftBtn.MouseButton1Click:Connect(function()
 	shiftLock = not shiftLock
 	shiftBtn.Text = shiftLock and "SHIFT LOCK: ON" or "SHIFT LOCK"
+
 	shiftIcon.Visible = shiftLock
 
 	if shiftLock then
@@ -203,6 +206,7 @@ shiftBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
+-- TOCAR ICONO
 shiftIcon.MouseButton1Click:Connect(function()
 	shiftLock = not shiftLock
 
