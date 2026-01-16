@@ -1,32 +1,24 @@
-
---// You vs Homer - RexHub Style Panel + 3 botones (TP, INF JUMP, SPEED decorativo)
+--// RexHub Insta Stealer estilo You vs Homer
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
 
---// GUARDAR LOBBY
-local lobbyCFrame
-local firstSpawn = true
-player.CharacterAdded:Connect(function(char)
-	task.wait(1)
-	local hrp = char:WaitForChild("HumanoidRootPart")
-	if firstSpawn then
-		lobbyCFrame = hrp.CFrame
-		firstSpawn = false
-	end
-end)
-
---// GUI
+-- GUI
 local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "RexHubUI"
+gui.Name = "RexHubGUI"
 gui.ResetOnSpawn = false
 
 -- PANEL
-local frame = Instance.new("Frame", gui)
+local frame = Instance.new("Frame")
+frame.Parent = gui
 frame.Position = UDim2.fromScale(0.35,0.2)
-frame.Size = UDim2.fromScale(0.26,0) -- tamaño medio, ancho ajustado
+frame.Size = UDim2.fromScale(0.3,0) -- ancho medio
 frame.AutomaticSize = Enum.AutomaticSize.Y
 frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 frame.BorderSizePixel = 0
@@ -36,7 +28,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
 
 -- HEADER
 local header = Instance.new("Frame", frame)
-header.Size = UDim2.new(1,0,0,34)
+header.Size = UDim2.new(1,0,0,36)
 header.BackgroundColor3 = Color3.fromRGB(240,240,240)
 header.BorderSizePixel = 0
 Instance.new("UICorner", header).CornerRadius = UDim.new(0,12)
@@ -45,7 +37,7 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1,-40,1,0)
 title.Position = UDim2.new(0,10,0,0)
 title.BackgroundTransparency = 1
-title.Text = "You vs Homer Panel"
+title.Text = "RexHub Insta Stealer 1.0"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.TextColor3 = Color3.fromRGB(0,0,0)
@@ -72,10 +64,10 @@ container.BackgroundTransparency = 1
 local layout = Instance.new("UIListLayout", container)
 layout.Padding = UDim.new(0,8)
 
--- FUNCION PARA BOTONES
-local function createButton(text, sizeY)
+-- BOTONES
+local function createButton(text)
 	local btn = Instance.new("TextButton", container)
-	btn.Size = UDim2.new(1,0,0,sizeY or 48)
+	btn.Size = UDim2.new(1,0,0,48)
 	btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
 	btn.Text = text
 	btn.Font = Enum.Font.GothamBold
@@ -86,12 +78,11 @@ local function createButton(text, sizeY)
 	return btn
 end
 
--- BOTONES
-local tpBtn = createButton("TP LOBBY")
-local infJumpBtn = createButton("INF JUMP")
+local tpBtn = createButton("TP Lobby")
+local infBtn = createButton("INF JUMP")
 local speedBtn = createButton("SPEED")
 
--- MINIMIZAR
+-- MINIMIZAR / RESTAURAR
 local minimized = false
 toggleBtn.MouseButton1Click:Connect(function()
 	minimized = not minimized
@@ -100,18 +91,33 @@ toggleBtn.MouseButton1Click:Connect(function()
 end)
 
 -- TP LOBBY
+local lobbyCFrame
+local firstSpawn = true
+player.CharacterAdded:Connect(function(c)
+	char = c
+	hrp = char:WaitForChild("HumanoidRootPart")
+	humanoid = char:WaitForChild("Humanoid")
+	if firstSpawn then
+		lobbyCFrame = hrp.CFrame
+		firstSpawn = false
+	end
+end)
+
 tpBtn.MouseButton1Click:Connect(function()
-	local char = player.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if hrp and lobbyCFrame then
 		hrp.CFrame = lobbyCFrame
 	end
 end)
 
--- INF JUMP @rznnq
+-- INF JUMP (rznnq source)
 local infinityJumpEnabled = false
 local jumpForce = 50
 local clampFallSpeed = 80
+
+infBtn.MouseButton1Click:Connect(function()
+	infinityJumpEnabled = not infinityJumpEnabled
+	infBtn.Text = infinityJumpEnabled and "INF JUMP (ON)" or "INF JUMP"
+end)
 
 RunService.Heartbeat:Connect(function()
 	if not infinityJumpEnabled then return end
@@ -119,7 +125,7 @@ RunService.Heartbeat:Connect(function()
 	if not char then return end
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if hrp and hrp.Velocity.Y < -clampFallSpeed then
-		hrp.Velocity = Vector3.new(hrp.Velocity.X, -clampFallSpeed, hrp.Velocity.Z)
+		hrp.Velocity = Vector3.new(hrp.Velocity.X,-clampFallSpeed,hrp.Velocity.Z)
 	end
 end)
 
@@ -129,22 +135,8 @@ UIS.JumpRequest:Connect(function()
 	if not char then return end
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if hrp then
-		hrp.Velocity = Vector3.new(hrp.Velocity.X, jumpForce, hrp.Velocity.Z)
+		hrp.Velocity = Vector3.new(hrp.Velocity.X,jumpForce,hrp.Velocity.Z)
 	end
 end)
 
-infJumpBtn.MouseButton1Click:Connect(function()
-	infinityJumpEnabled = not infinityJumpEnabled
-	infJumpBtn.Text = infinityJumpEnabled and "INF JUMP: ON" or "INF JUMP"
-end)
-
--- HACER EL MENU PERSISTENTE AL MORIR
-local function persistMenu()
-	player.CharacterAdded:Connect(function(char)
-		task.wait(0.5)
-		gui.Parent = player.PlayerGui
-	end)
-end
-persistMenu()
-
-print("✅ You vs Homer con panel RexHub + 3 botones listo")
+print("✅ Menú RexHub mediano listo con TP Lobby, INF JUMP y SPEED")
