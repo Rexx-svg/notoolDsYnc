@@ -1,10 +1,11 @@
--- YOU VS HOMER HUB (PARA TU JUEGO EN ROBLOX STUDIO)
+-- YOU VS HOMER HUB (ROBLOX STUDIO)
 -- LocalScript en StarterPlayer > StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
@@ -33,6 +34,9 @@ frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
+
+local normalSize = frame.Size
+local minimizedSize = UDim2.new(0,260,0,36)
 
 -- HEADER
 local header = Instance.new("Frame", frame)
@@ -84,7 +88,6 @@ local function createButton(text)
 	return b
 end
 
--- ORDEN
 local tpBtn    = createButton("TP LOBBY")
 local speedBtn = createButton("SPEED")
 local infBtn   = createButton("INF JUMP")
@@ -95,13 +98,16 @@ local lagBtn   = createButton("FIX LAG")
 -- ABRIR / CERRAR
 ------------------------------------------------
 local minimized = false
+
 toggleBtn.MouseButton1Click:Connect(function()
 	minimized = not minimized
 	if minimized then
 		container.Visible = false
+		frame.Size = minimizedSize
 		toggleBtn.Text = "+"
 	else
 		container.Visible = true
+		frame.Size = normalSize
 		toggleBtn.Text = "-"
 	end
 end)
@@ -146,7 +152,7 @@ speedBtn.MouseButton1Click:Connect(function()
 end)
 
 ------------------------------------------------
--- INF JUMP (rznnq toggle)
+-- INF JUMP
 ------------------------------------------------
 local infinityJumpEnabled = false
 local jumpForce = 50
@@ -174,15 +180,26 @@ UIS.JumpRequest:Connect(function()
 end)
 
 ------------------------------------------------
--- ESP (Highlight rojo + Cubo grande de hitbox)
+-- ESP (PERSISTENTE AL REAPARECER)
 ------------------------------------------------
 local espEnabled = false
 local espFolder = Instance.new("Folder", gui)
 espFolder.Name = "ESPFolder"
 
+local function removeESPForPlayer(plr)
+	for _,v in pairs(espFolder:GetChildren()) do
+		if v:GetAttribute("Owner") == plr.UserId then
+			v:Destroy()
+		end
+	end
+end
+
 local function addESP(plr)
+	if not espEnabled then return end
 	if plr == player then return end
 	if not plr.Character then return end
+	
+	removeESPForPlayer(plr)
 	
 	local hrp2 = plr.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp2 then return end
@@ -192,6 +209,7 @@ local function addESP(plr)
 	h.FillColor = Color3.fromRGB(255,0,0)
 	h.OutlineColor = Color3.fromRGB(255,0,0)
 	h.Parent = espFolder
+	h:SetAttribute("Owner", plr.UserId)
 	
 	local box = Instance.new("BoxHandleAdornment")
 	box.Adornee = hrp2
@@ -201,11 +219,13 @@ local function addESP(plr)
 	box.AlwaysOnTop = true
 	box.ZIndex = 10
 	box.Parent = espFolder
+	box:SetAttribute("Owner", plr.UserId)
 end
 
 espBtn.MouseButton1Click:Connect(function()
 	espEnabled = not espEnabled
 	espBtn.Text = espEnabled and "ESP (ON)" or "ESP"
+	
 	if espEnabled then
 		for _,plr in pairs(Players:GetPlayers()) do
 			addESP(plr)
@@ -215,17 +235,32 @@ espBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
+for _,plr in pairs(Players:GetPlayers()) do
+	if plr ~= player then
+		plr.CharacterAdded:Connect(function()
+			task.wait(1)
+			if espEnabled then
+				addESP(plr)
+			end
+		end)
+	end
+end
+
 Players.PlayerAdded:Connect(function(plr)
 	plr.CharacterAdded:Connect(function()
-		wait(1)
+		task.wait(1)
 		if espEnabled then
 			addESP(plr)
 		end
 	end)
 end)
 
+Players.PlayerRemoving:Connect(function(plr)
+	removeESPForPlayer(plr)
+end)
+
 ------------------------------------------------
--- FIX LAG (Reversible)
+-- FIX LAG (REVERSIBLE)
 ------------------------------------------------
 local lagFixEnabled = false
 local originalProperties = {}
@@ -240,10 +275,12 @@ lagBtn.MouseButton1Click:Connect(function()
 
 		for _,v in pairs(workspace:GetDescendants()) do
 			if v:IsA("BasePart") then
-				originalProperties[v] = {
-					Material = v.Material,
-					Reflectance = v.Reflectance
-				}
+				if not originalProperties[v] then
+					originalProperties[v] = {
+						Material = v.Material,
+						Reflectance = v.Reflectance
+					}
+				end
 				v.Material = Enum.Material.SmoothPlastic
 				v.Reflectance = 0
 			end
