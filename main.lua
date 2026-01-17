@@ -1,11 +1,9 @@
---// YOU VS HOMER HUB (para TU juego)
--- TP LOBBY | SPEED | INF JUMP | ESP | FIX LAG
--- Panel autoajustable, animaciones, sonidos y botón + / -
+-- YOU VS HOMER HUB
+-- Hub completo para tu juego
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 
 local player = Players.LocalPlayer
@@ -19,12 +17,13 @@ player.CharacterAdded:Connect(function(c)
 	humanoid = char:WaitForChild("Humanoid")
 end)
 
+------------------------------------------------
 -- GUI
+------------------------------------------------
 local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.Name = "YOUVSHOMERHUB"
 gui.ResetOnSpawn = false
 
--- PANEL
 local frame = Instance.new("Frame", gui)
 frame.Position = UDim2.fromScale(0.35,0.2)
 frame.Size = UDim2.fromScale(0.3,0)
@@ -38,7 +37,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
 -- HEADER
 local header = Instance.new("Frame", frame)
 header.Size = UDim2.new(1,0,0,36)
-header.BackgroundColor3 = Color3.fromRGB(230,230,230)
+header.BackgroundColor3 = Color3.fromRGB(240,240,240)
 header.BorderSizePixel = 0
 Instance.new("UICorner", header).CornerRadius = UDim.new(0,12)
 
@@ -58,66 +57,66 @@ toggleBtn.Position = UDim2.new(1,-30,0.5,-13)
 toggleBtn.Text = "-"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 22
-toggleBtn.BackgroundColor3 = Color3.fromRGB(200,200,200)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(220,220,220)
 toggleBtn.TextColor3 = Color3.fromRGB(0,0,0)
 toggleBtn.BorderSizePixel = 0
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1,0)
 
 -- CONTENEDOR
 local container = Instance.new("Frame", frame)
-container.Size = UDim2.new(1,-16,0,0)
 container.Position = UDim2.new(0,8,0,42)
+container.Size = UDim2.new(1,-16,0,0)
 container.AutomaticSize = Enum.AutomaticSize.Y
 container.BackgroundTransparency = 1
 
 local layout = Instance.new("UIListLayout", container)
-layout.Padding = UDim.new(0,6)
-
--- SONIDO BOTONES
-local clickSound = Instance.new("Sound", gui)
-clickSound.SoundId = "rbxassetid://12222225"
-clickSound.Volume = 1
-
-local function playSound()
-	clickSound:Play()
-end
+layout.Padding = UDim.new(0,8)
 
 -- BOTONES
 local function createButton(text)
-	local btn = Instance.new("TextButton", container)
-	btn.Size = UDim2.new(1,0,0,42)
-	btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-	btn.Text = text
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 18
-	btn.TextColor3 = Color3.new(1,1,1)
-	btn.BorderSizePixel = 0
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
-	btn.MouseButton1Click:Connect(playSound)
-	return btn
+	local b = Instance.new("TextButton", container)
+	b.Size = UDim2.new(1,0,0,48)
+	b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+	b.Text = text
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 20
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BorderSizePixel = 0
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,12)
+	return b
 end
 
-local tpBtn   = createButton("TP LOBBY")
-local speedBtn= createButton("SPEED")
-local infBtn  = createButton("INF JUMP")
-local espBtn  = createButton("ESP")
-local fixBtn  = createButton("FIX LAG")
+-- ORDEN:
+-- TP LOBBY
+-- SPEED
+-- INF JUMP
+-- ESP
+-- FIX LAG
+local tpBtn    = createButton("TP LOBBY")
+local speedBtn = createButton("SPEED")
+local infBtn   = createButton("INF JUMP")
+local espBtn   = createButton("ESP")
+local lagBtn   = createButton("FIX LAG")
 
--- MINIMIZAR / ABRIR CON ANIMACIÓN
+------------------------------------------------
+-- ABRIR / CERRAR MENU (+ y -)
+------------------------------------------------
 local minimized = false
 toggleBtn.MouseButton1Click:Connect(function()
-	playSound()
 	minimized = not minimized
-	local goal = minimized and 0 or container.AbsoluteContentSize.Y
-	TweenService:Create(container,TweenInfo.new(0.25,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),
-		{Size = UDim2.new(1,-16,0,goal)}):Play()
-	container.Visible = not minimized
-	toggleBtn.Text = minimized and "+" or "-"
+	
+	if minimized then
+		container.Visible = false
+		toggleBtn.Text = "+"
+	else
+		container.Visible = true
+		toggleBtn.Text = "-"
+	end
 end)
 
--- =========================
--- TP LOBBY (SOURCE QUE PEDISTE)
--- =========================
+------------------------------------------------
+-- TP LOBBY
+------------------------------------------------
 local lobbyCFrame
 local firstSpawn = true
 
@@ -137,26 +136,27 @@ tpBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- =========================
--- SPEED (+29%)
--- =========================
-local speedOn = false
-local normalSpeed = humanoid.WalkSpeed
+------------------------------------------------
+-- SPEED (+35%)
+------------------------------------------------
+local speedEnabled = false
+local baseSpeed = humanoid.WalkSpeed
 
 speedBtn.MouseButton1Click:Connect(function()
-	speedOn = not speedOn
-	if speedOn then
-		humanoid.WalkSpeed = normalSpeed * 1.29
+	speedEnabled = not speedEnabled
+	
+	if speedEnabled then
+		humanoid.WalkSpeed = baseSpeed * 1.35
 		speedBtn.Text = "SPEED (ON)"
 	else
-		humanoid.WalkSpeed = normalSpeed
+		humanoid.WalkSpeed = baseSpeed
 		speedBtn.Text = "SPEED"
 	end
 end)
 
--- =========================
--- INF JUMP (SOURCE QUE PEDISTE)
--- =========================
+------------------------------------------------
+-- INF JUMP (rznnq toggle)
+------------------------------------------------
 local infinityJumpEnabled = false
 local jumpForce = 50
 local clampFallSpeed = 80
@@ -168,87 +168,81 @@ end)
 
 RunService.Heartbeat:Connect(function()
 	if not infinityJumpEnabled then return end
-	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if hrp and hrp.Velocity.Y < -clampFallSpeed then
-		hrp.Velocity = Vector3.new(hrp.Velocity.X,-clampFallSpeed,hrp.Velocity.Z)
+		hrp.Velocity = Vector3.new(hrp.Velocity.X, -clampFallSpeed, hrp.Velocity.Z)
 	end
 end)
 
 UIS.JumpRequest:Connect(function()
 	if not infinityJumpEnabled then return end
-	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if hrp then
-		hrp.Velocity = Vector3.new(hrp.Velocity.X,jumpForce,hrp.Velocity.Z)
+		hrp.Velocity = Vector3.new(hrp.Velocity.X, jumpForce, hrp.Velocity.Z)
 	end
 end)
 
--- =========================
--- ESP (Players en rojo con Highlight)
--- =========================
+------------------------------------------------
+-- ESP (Highlight rojo)
+------------------------------------------------
 local espEnabled = false
-local highlights = {}
+local espFolder = Instance.new("Folder", gui)
+espFolder.Name = "ESPFolder"
 
 local function addESP(plr)
+	if plr == player then return end
 	if plr.Character then
-		local h = Instance.new("Highlight")
+		local h = Instance.new("Highlight", espFolder)
+		h.Adornee = plr.Character
 		h.FillColor = Color3.fromRGB(255,0,0)
 		h.OutlineColor = Color3.fromRGB(255,0,0)
-		h.Parent = plr.Character
-		highlights[plr] = h
 	end
-end
-
-local function removeESP()
-	for _,h in pairs(highlights) do
-		h:Destroy()
-	end
-	highlights = {}
 end
 
 espBtn.MouseButton1Click:Connect(function()
 	espEnabled = not espEnabled
+	espBtn.Text = espEnabled and "ESP (ON)" or "ESP"
+	
 	if espEnabled then
 		for _,plr in pairs(Players:GetPlayers()) do
-			if plr ~= player then
-				addESP(plr)
-			end
+			addESP(plr)
 		end
-		espBtn.Text = "ESP (ON)"
 	else
-		removeESP()
-		espBtn.Text = "ESP"
+		espFolder:ClearAllChildren()
 	end
 end)
 
 Players.PlayerAdded:Connect(function(plr)
 	if espEnabled then
 		plr.CharacterAdded:Connect(function()
+			wait(1)
 			addESP(plr)
 		end)
 	end
 end)
 
--- =========================
--- FIX LAG (modo carton + más fluido)
--- =========================
-local fixOn = false
+------------------------------------------------
+-- FIX LAG (modo cartón / fluido)
+------------------------------------------------
+local lagFixEnabled = false
 
-fixBtn.MouseButton1Click:Connect(function()
-	fixOn = not fixOn
-	if fixOn then
+lagBtn.MouseButton1Click:Connect(function()
+	lagFixEnabled = not lagFixEnabled
+	lagBtn.Text = lagFixEnabled and "FIX LAG (ON)" or "FIX LAG"
+	
+	if lagFixEnabled then
 		Lighting.GlobalShadows = false
-		Lighting.FogEnd = 1e5
+		Lighting.FogEnd = 9e9
+		
 		for _,v in pairs(workspace:GetDescendants()) do
 			if v:IsA("BasePart") then
-				v.Material = Enum.Material.Cardboard
+				v.Material = Enum.Material.Plastic
 				v.Reflectance = 0
 			end
 		end
-		fixBtn.Text = "FIX LAG (ON)"
 	else
 		Lighting.GlobalShadows = true
-		fixBtn.Text = "FIX LAG"
 	end
 end)
 
-print("🔥 YOU VS HOMER HUB cargado completo")
+print("🔥 YOU VS HOMER HUB cargado completo y funcionando")
