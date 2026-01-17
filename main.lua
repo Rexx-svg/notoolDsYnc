@@ -1,109 +1,133 @@
 -- YOU VS HOMER HUB
--- By Jorge ad 🔥
+-- Coloca este LocalScript en:
+-- StarterPlayer > StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local Lighting = game:GetService("Lighting")
-
 local player = Players.LocalPlayer
 
-------------------------------------------------
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
+
+player.CharacterAdded:Connect(function(c)
+	char = c
+	hrp = char:WaitForChild("HumanoidRootPart")
+	humanoid = char:WaitForChild("Humanoid")
+end)
+
 -- GUI
-------------------------------------------------
 local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "YouVsHomerHub"
+gui.Name = "YOUVSHOMER_HUB"
 gui.ResetOnSpawn = false
 
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 260, 0, 0)
-main.Position = UDim2.fromScale(0.35, 0.25)
-main.BackgroundColor3 = Color3.fromRGB(25,25,25)
-main.BorderSizePixel = 0
-main.AutomaticSize = Enum.AutomaticSize.Y
-main.Active = true
-main.Draggable = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
+-- FRAME PRINCIPAL
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,260,0,330)
+frame.Position = UDim2.new(0.5,-130,0.3,0)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
 
 -- HEADER
-local header = Instance.new("Frame", main)
-header.Size = UDim2.new(1,0,0,36)
-header.BackgroundColor3 = Color3.fromRGB(230,230,230)
+local header = Instance.new("Frame",frame)
+header.Size = UDim2.new(1,0,0,35)
+header.BackgroundColor3 = Color3.fromRGB(255,255,255)
 header.BorderSizePixel = 0
-Instance.new("UICorner", header).CornerRadius = UDim.new(0,14)
+Instance.new("UICorner",header).CornerRadius = UDim.new(0,12)
 
-local title = Instance.new("TextLabel", header)
+local title = Instance.new("TextLabel",header)
 title.Size = UDim2.new(1,-40,1,0)
 title.Position = UDim2.new(0,10,0,0)
-title.BackgroundTransparency = 1
 title.Text = "YOU VS HOMER HUB"
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.TextColor3 = Color3.fromRGB(0,0,0)
+title.TextSize = 16
+title.TextColor3 = Color3.new(0,0,0)
+title.BackgroundTransparency = 1
 title.TextXAlignment = Left
 
-local toggleBtn = Instance.new("TextButton", header)
-toggleBtn.Size = UDim2.new(0,26,0,26)
-toggleBtn.Position = UDim2.new(1,-30,0.5,-13)
+local toggleBtn = Instance.new("TextButton",header)
+toggleBtn.Size = UDim2.new(0,25,0,25)
+toggleBtn.Position = UDim2.new(1,-30,0.5,-12)
 toggleBtn.Text = "-"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 22
 toggleBtn.BackgroundColor3 = Color3.fromRGB(200,200,200)
-toggleBtn.TextColor3 = Color3.fromRGB(0,0,0)
 toggleBtn.BorderSizePixel = 0
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1,0)
+Instance.new("UICorner",toggleBtn).CornerRadius = UDim.new(1,0)
 
 -- CONTENEDOR
-local container = Instance.new("Frame", main)
-container.Position = UDim2.new(0,8,0,42)
-container.Size = UDim2.new(1,-16,0,0)
-container.AutomaticSize = Enum.AutomaticSize.Y
+local container = Instance.new("Frame",frame)
+container.Position = UDim2.new(0,10,0,45)
+container.Size = UDim2.new(1,-20,1,-55)
 container.BackgroundTransparency = 1
 
-local layout = Instance.new("UIListLayout", container)
+local layout = Instance.new("UIListLayout",container)
 layout.Padding = UDim.new(0,6)
 
-------------------------------------------------
 -- BOTONES
-------------------------------------------------
-local function createButton(txt)
-	local b = Instance.new("TextButton", container)
-	b.Size = UDim2.new(1,0,0,40)
+local function createButton(text)
+	local b = Instance.new("TextButton",container)
+	b.Size = UDim2.new(1,0,0,45)
 	b.BackgroundColor3 = Color3.fromRGB(35,35,35)
-	b.Text = txt
+	b.Text = text
 	b.Font = Enum.Font.GothamBold
 	b.TextSize = 18
 	b.TextColor3 = Color3.new(1,1,1)
 	b.BorderSizePixel = 0
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,10)
 	return b
 end
 
-local tpBtn   = createButton("TP LOBBY")
-local speedBtn= createButton("SPEED")
-local infBtn  = createButton("INF JUMP")
-local espBtn  = createButton("ESP")
-local lagBtn  = createButton("FIX LAG")
+-- ORDEN:
+-- TP LOBBY
+-- SPEED
+-- INF JUMP
+-- ESP
+-- FIX LAG
 
-------------------------------------------------
--- MINIMIZAR + / -
-------------------------------------------------
-local minimized = false
+local tpBtn    = createButton("TP LOBBY")
+local speedBtn = createButton("SPEED")
+local infBtn   = createButton("INF JUMP")
+local espBtn   = createButton("ESP")
+local lagBtn   = createButton("FIX LAG")
+
+----------------------------------------------------------------
+-- MINIMIZAR / ABRIR (+ y -)
+----------------------------------------------------------------
+local opened = true
+
 toggleBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	container.Visible = not minimized
-	toggleBtn.Text = minimized and "+" or "-"
+	opened = not opened
+	
+	if opened then
+		container.Visible = true
+		toggleBtn.Text = "-"
+		frame:TweenSize(UDim2.new(0,260,0,330),"Out","Quad",0.2,true)
+	else
+		toggleBtn.Text = "+"
+		frame:TweenSize(UDim2.new(0,260,0,40),"Out","Quad",0.2,true)
+		task.delay(0.2,function()
+			container.Visible = false
+		end)
+	end
 end)
 
-------------------------------------------------
--- TP LOBBY
-------------------------------------------------
+----------------------------------------------------------------
+-- TP LOBBY (primer spawn)
+----------------------------------------------------------------
 local lobbyCFrame
 local firstSpawn = true
 
-player.CharacterAdded:Connect(function(char)
-	local hrp = char:WaitForChild("HumanoidRootPart")
+player.CharacterAdded:Connect(function(c)
+	char = c
+	hrp = char:WaitForChild("HumanoidRootPart")
+	humanoid = char:WaitForChild("Humanoid")
 	if firstSpawn then
 		lobbyCFrame = hrp.CFrame
 		firstSpawn = false
@@ -111,35 +135,31 @@ player.CharacterAdded:Connect(function(char)
 end)
 
 tpBtn.MouseButton1Click:Connect(function()
-	local char = player.Character
-	if char and lobbyCFrame then
-		char:WaitForChild("HumanoidRootPart").CFrame = lobbyCFrame
+	if hrp and lobbyCFrame then
+		hrp.CFrame = lobbyCFrame
 	end
 end)
 
-------------------------------------------------
+----------------------------------------------------------------
 -- SPEED (+35%)
-------------------------------------------------
+----------------------------------------------------------------
 local speedOn = false
-local defaultSpeed = 16
-local speedMultiplier = 1.35
+local baseSpeed = humanoid.WalkSpeed
 
 speedBtn.MouseButton1Click:Connect(function()
 	speedOn = not speedOn
-	speedBtn.Text = speedOn and "SPEED (ON)" or "SPEED"
-
-	local char = player.Character
-	if char then
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if hum then
-			hum.WalkSpeed = speedOn and (defaultSpeed * speedMultiplier) or defaultSpeed
-		end
+	if speedOn then
+		humanoid.WalkSpeed = baseSpeed * 1.35
+		speedBtn.Text = "SPEED (ON)"
+	else
+		humanoid.WalkSpeed = baseSpeed
+		speedBtn.Text = "SPEED"
 	end
 end)
 
-------------------------------------------------
--- INF JUMP (rznnq source con ON/OFF)
-------------------------------------------------
+----------------------------------------------------------------
+-- INF JUMP (rznnq, ON/OFF)
+----------------------------------------------------------------
 local infinityJumpEnabled = false
 local jumpForce = 50
 local clampFallSpeed = 80
@@ -151,95 +171,77 @@ end)
 
 RunService.Heartbeat:Connect(function()
 	if not infinityJumpEnabled then return end
-	local char = player.Character
-	if not char then return end
-	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if hrp and hrp.Velocity.Y < -clampFallSpeed then
-		hrp.Velocity = Vector3.new(hrp.Velocity.X, -clampFallSpeed, hrp.Velocity.Z)
+		hrp.Velocity = Vector3.new(hrp.Velocity.X,-clampFallSpeed,hrp.Velocity.Z)
 	end
 end)
 
-UserInputService.JumpRequest:Connect(function()
+UIS.JumpRequest:Connect(function()
 	if not infinityJumpEnabled then return end
-	local char = player.Character
-	if not char then return end
-	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if hrp then
-		hrp.Velocity = Vector3.new(hrp.Velocity.X, jumpForce, hrp.Velocity.Z)
+		hrp.Velocity = Vector3.new(hrp.Velocity.X,jumpForce,hrp.Velocity.Z)
 	end
 end)
 
-------------------------------------------------
--- ESP (Highlight + Hitbox rojo)
-------------------------------------------------
-local espEnabled = false
-local espFolder = Instance.new("Folder", gui)
-espFolder.Name = "ESPFolder"
+----------------------------------------------------------------
+-- ESP PLAYERS (rojo + hitbox)
+----------------------------------------------------------------
+local espOn = false
+local espBoxes = {}
 
-local function addESP(plr)
+local function createESP(plr)
 	if plr == player then return end
-	local char = plr.Character
-	if not char then return end
-
-	local h = Instance.new("Highlight")
-	h.Adornee = char
-	h.FillColor = Color3.fromRGB(255,0,0)
-	h.OutlineColor = Color3.fromRGB(255,0,0)
-	h.Parent = espFolder
-
-	local root = char:FindFirstChild("HumanoidRootPart")
-	if root then
-		local box = Instance.new("BoxHandleAdornment")
-		box.Adornee = root
-		box.Size = root.Size + Vector3.new(1,2,1)
-		box.Color3 = Color3.fromRGB(255,0,0)
-		box.Transparency = 0.5
-		box.AlwaysOnTop = true
-		box.ZIndex = 10
-		box.Parent = espFolder
-	end
+	local box = Instance.new("BoxHandleAdornment")
+	box.Size = Vector3.new(4,6,2)
+	box.Color3 = Color3.fromRGB(255,0,0)
+	box.Transparency = 0.5
+	box.AlwaysOnTop = true
+	box.ZIndex = 10
+	box.Adornee = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+	box.Parent = gui
+	espBoxes[plr] = box
 end
 
 espBtn.MouseButton1Click:Connect(function()
-	espEnabled = not espEnabled
-	espBtn.Text = espEnabled and "ESP (ON)" or "ESP"
-
-	if espEnabled then
+	espOn = not espOn
+	espBtn.Text = espOn and "ESP (ON)" or "ESP"
+	
+	if espOn then
 		for _,plr in pairs(Players:GetPlayers()) do
-			addESP(plr)
+			createESP(plr)
 		end
 	else
-		espFolder:ClearAllChildren()
+		for _,box in pairs(espBoxes) do
+			box:Destroy()
+		end
+		espBoxes = {}
 	end
 end)
 
-------------------------------------------------
--- FIX LAG (textura “sin cargar” + restaurar)
-------------------------------------------------
-local lagFixEnabled = false
-local saved = {}
+----------------------------------------------------------------
+-- FIX LAG (texturas cartón / revertible)
+----------------------------------------------------------------
+local lagFixOn = false
+local oldMaterials = {}
 
 lagBtn.MouseButton1Click:Connect(function()
-	lagFixEnabled = not lagFixEnabled
-	lagBtn.Text = lagFixEnabled and "FIX LAG (ON)" or "FIX LAG"
+	lagFixOn = not lagFixOn
+	lagBtn.Text = lagFixOn and "FIX LAG (ON)" or "FIX LAG"
 
-	if lagFixEnabled then
-		for _,v in pairs(workspace:GetDescendants()) do
-			if v:IsA("BasePart") then
-				saved[v] = {Material = v.Material, Color = v.Color}
-				v.Material = Enum.Material.Plastic
-				v.Color = Color3.fromRGB(200,200,200)
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then
+			if lagFixOn then
+				oldMaterials[v] = v.Material
+				v.Material = Enum.Material.SmoothPlastic
+			else
+				if oldMaterials[v] then
+					v.Material = oldMaterials[v]
+				end
 			end
 		end
-	else
-		for obj,data in pairs(saved) do
-			if obj and obj.Parent then
-				obj.Material = data.Material
-				obj.Color = data.Color
-			end
-		end
-		saved = {}
 	end
 end)
 
-print("🔥 YOU VS HOMER HUB CARGADO COMPLETO 🔥")
+print("🔥 YOU VS HOMER HUB cargado correctamente")
